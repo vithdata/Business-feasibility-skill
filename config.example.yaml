@@ -1,0 +1,76 @@
+# Business Feasibility Skill — Example Configuration
+
+# Copy this file to config.yaml and edit with your actual values.
+# config.yaml is in .gitignore — never commit real config.
+
+obsidian:
+  # Enable Obsidian integration (true/false)
+  enabled: true
+
+  # Vault name (folder in ~/Documents/)
+  vault: vegapunk
+
+  # Base path for vault (supports ~/ for home directory)
+  # Overridden by OBSIDIAN_VAULT_PATH environment variable
+  base_path: ~/Documents/vegapunk
+
+  # Venture notes location
+  ventures_dir: Business/Ventures
+
+  # Template location
+  templates_dir: Business/Templates
+
+  # Research notes location
+  research_dir: Business/Research
+
+html:
+  # Enable HTML report generation (true/false)
+  enabled: true
+
+  # Attach report to chat (Telegram/CLI) (true/false)
+  attach_to_chat: true
+
+  # Output directory for reports
+  output_dir: reports
+
+  # Report filename format (supports {session_id}, {date}, {venture})
+  filename_format: "feasibility_{session_id}.html"
+
+workflow:
+  # Maximum questions per turn (4-6 recommended)
+  max_questions_per_turn: 6
+
+  # Default interaction mode
+  # consultative = ask batch, wait, challenge
+  # fast = fewer questions, faster progression
+  default_mode: consultative
+
+  # Phase timeouts (in seconds, 0 = no timeout)
+  phase_timeout: 0
+
+  # Max turns per phase (0 = unlimited)
+  max_turns_per_phase: 0
+
+  # Enable assumption marking (true/false)
+  mark_assumptions: true
+
+  # Enable contradiction detection (true/false)
+  detect_contradictions: true
+
+logging:
+  # Log level: debug, info, warning, error
+  level: info
+
+  # Log file location (empty = no file logging)
+  log_file: ""
+
+  # Log Q&A to Obsidian (true/false)
+  log_to_obsidian: true
+
+  # Log errors only (true = less verbose)
+  errors_only: false
+
+# Runtime overrides (can be set via environment variables)
+# OBSIDIAN_VAULT_PATH=~/Documents/my-vault
+# HTML_OUTPUT_DIR=~/reports
+# LOG_LEVEL=debug
