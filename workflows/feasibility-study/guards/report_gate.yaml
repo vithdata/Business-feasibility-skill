@@ -1,3 +1,76 @@
-require:
-  - business_type
-  - capital
+# Guard: Report Gate
+# Block report generation until critical data is available
+
+report_gate:
+  enabled: true
+
+  required_for_html_report:
+    - field: business_type
+      level: critical
+      reason: "ไม่รู้ว่าธุรกิจอะไร → report ไม่มีความหมาย"
+    - field: target_customer
+      level: critical
+      reason: "ไม่รู้ใครคือลูกค้า → ไม่รู้จะขายให้ใคร"
+    - field: capital
+      level: critical
+      reason: "ไม่รู้งบลงทุน → ไม่รู้ runway"
+    - field: estimated_revenue
+      level: critical
+      reason: "ไม่รู้รายได้ → ไม่รู้ break-even"
+    - field: cost_structure
+      level: critical
+      reason: "ไม่รู้ต้นทุน → ไม่รู้ margin"
+
+  optional_for_html_report:
+    - field: competitor_list
+    - field: market_size
+    - field: differentiation
+    - field: swot
+    - field: failure_modes
+
+  # If critical fields missing → blocking message with follow-up questions
+  blocked_message: |
+    ข้อมูลยังไม่ครบ — ก่อนสร้าง report ต้องตอบคำถามเหล่านี้ก่อน:
+
+    [list of missing critical fields + why each matters]
+
+    ตอบเฉพาะ 1-3 ข้อที่ขาดและมีผลต่อการตัดสินใจมากที่สุด
+    ข้อมูลอื่นฉันจะ research เองจาก benchmark
+
+  # Assumption documentation
+  assumption_policy:
+    allowed: true
+    max_unknowns: 3
+    must_document:
+      - field_name
+      - assumed_value
+      - source_or_reason
+      - validation_metric
+    user_must_confirm: true
+
+  # Quality threshold
+  quality_threshold:
+    min_known_facts: 5
+    min_questions_answered: 8
+    max_assumptions_ratio: 0.4
+
+# Report output specifications
+output_specs:
+  html:
+    path: "feasibility_report.html"
+    template: "renderers/dashboard-template.html"
+    attach_to_chat: true
+
+  markdown:
+    path: "feasibility_report.md"
+    include_toc: true
+
+  csv:
+    path: "financial_model.csv"
+    optional: true
+
+  obsidian_note:
+    path: "~/obsidian-vault/vegapunk/Business/Ventures/<venture>/report.md"
+    frontmatter: true
+    include_qa_log: true
+    include_assumptions: true

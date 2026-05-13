@@ -1,0 +1,62 @@
+# Guard: Phase Advancement Rules
+# Controls when workflow can move to the next phase
+
+advancement_rules:
+
+  intake_to_grill:
+    conditions:
+      - check: "at_least_2_required_fields"
+        fields: [business_type, target_customer, capital, revenue_estimate]
+        required_count: 2
+      - check: "business_type_not_empty"
+      - check: "customer_not_empty"
+    fail_message: "ยังขาดข้อมูลจำเป็น — ตอบก่อน 2-3 ข้อแล้วค่อยไปต่อ"
+    blocked_until: "user_provides_required_fields"
+
+  grill_to_research:
+    conditions:
+      - check: "assumptions_probed"
+        description: "ถามแล้วอย่างน้อย 3 คำถามที่มีผลต่อความอยู่รอด"
+      - check: "no_critical_vague"
+        description: "ไม่มี 'น่าจะ' ในคำตอบที่เกี่ยวกับ capital, margin, differentiation"
+      - check: "capital_known"
+      - check: "cost_structure_known"
+    fail_message: "ยังไม่ได้ซักแผนธุรกิจให้ลึกพอ — ตอบคำถาม grill ก่อน"
+    blocked_until: "grill_phase_satisfied"
+
+  research_to_modeling:
+    conditions:
+      - check: "competitor_data_collected"
+      - check: "market_size_estimated"
+      - check: "pricing_benchmark_available"
+    fail_message: "ข้อมูลตลาดยังไม่พอ — ต้อง research ก่อน model"
+    blocked_until: "research_data_sufficient"
+
+  modeling_to_risk:
+    conditions:
+      - check: "all_3_scenarios_calculated"
+      - check: "break_even_computed"
+      - check: "runway_computed"
+    fail_message: "ยังไม่มี financial model → ไป risk ไม่ได้"
+    blocked_until: "financial_model_complete"
+
+  risk_to_recommendation:
+    conditions:
+      - check: "top_3_failure_modes_identified"
+      - check: "swot_complete"
+      - check: "risk_heatmap_built"
+    fail_message: "ต้องวิเคราะห์ risk ก่อน → สร้าง failure modes + SWOT"
+    blocked_until: "risk_analysis_complete"
+
+  recommendation_final:
+    conditions:
+      - check: "all_previous_phases_complete"
+      - check: "required_report_fields_exist"
+        fields: [business_type, target_customer, capital, estimated_revenue, cost_structure]
+      - check: "no_critical_unknowns"
+        critical: [business_type, target_customer, capital]
+    fail_message: "ข้อมูลยังไม่ครบ — ตอบคำถามที่ขาดก่อน แล้วค่อยสร้าง report"
+    blocked_until: "all_critical_fields_filled"
+
+# Override: report_gate can be bypassed only with user permission
+# and must document which fields are assumptions

@@ -1,2 +1,215 @@
+# Feasibility Study Workflow — State Machine Definition
 name: feasibility-study
+description: "Stateful multi-turn business feasibility workflow — เจ๊งในกระดาษ"
+version: 1.0.0
+
 start_state: intake
+
+# ─── Phase Sequence ───────────────────────────────────────────────────────────
+states:
+  - id: intake
+    description: "Minimum intake — collect core business facts"
+    max_turns: 2
+    questions_per_turn: 5
+    required_fields:
+      - business_type
+      - target_customer
+    optional_fields:
+      - location
+      - capital
+      - revenue_estimate
+      - known_costs
+    next_phase: grill
+    advance_condition: "at_least_2_required_fields"
+
+  - id: grill
+    description: "Grill phase — challenge assumptions, probe weaknesses"
+    max_turns: 4
+    questions_per_turn: 4
+    focus_areas:
+      - financial_structure
+      - traffic_conversion
+      - operational_reality
+      - competitive_advantage
+    required_fields:
+      - capital
+      - cost_structure
+      - differentiation
+    next_phase: research
+    advance_condition: "critical_assumptions_uncovered"
+    stop_on_vague: true
+
+  - id: research
+    description: "Market research — benchmarks, competitors, market size"
+    max_turns: 2
+    questions_per_turn: 3
+    required_fields:
+      - competitor_list
+      - market_size
+    optional_fields:
+      - pricing_benchmark
+      - customer_behavior
+    next_phase: modeling
+    advance_condition: "benchmark_data_collected"
+
+  - id: modeling
+    description: "Financial modeling — 3 scenarios, break-even, runway"
+    max_turns: 2
+    questions_per_turn: 2
+    required_fields:
+      - capital
+      - estimated_revenue
+      - cost_structure
+    output:
+      - best_case
+      - base_case
+      - worst_case
+      - break_even
+      - runway
+    next_phase: risk
+    advance_condition: "all_scenarios_calculated"
+
+  - id: risk
+    description: "Risk assessment — FDD failure modes, SWOT, risk heatmap"
+    max_turns: 2
+    questions_per_turn: 3
+    required_fields:
+      - failure_modes
+      - swot
+      - risk_heatmap
+    output:
+      - fdd_modes
+      - swot_analysis
+      - risk_matrix
+      - survival_map
+    next_phase: recommendation
+    advance_condition: "top_3_risks_identified"
+
+  - id: recommendation
+    description: "Final recommendation + HTML report generation"
+    max_turns: 1
+    questions_per_turn: 0
+    output:
+      - feasibility_score
+      - recommendation
+      - next_actions
+      - html_report_path
+      - obsidian_note_path
+    completion_condition: "report_generated_and_delivered"
+
+# ─── Guard Conditions ──────────────────────────────────────────────────────────
+guards:
+  required_fields:
+    engine: intake
+    rules:
+      - field: business_type
+        critical: true
+        reason: "ไม่รู้ว่าธุรกิจอะไร → คำนวณไม่ได้"
+      - field: target_customer
+        critical: true
+        reason: "ไม่รู้ใครคือลูกค้า → ไม่รู้จะขายให้ใคร"
+      - field: capital
+        critical: false
+        reason: "ประมาณได้ แต่ไม่แม่น"
+      - field: revenue_estimate
+        critical: false
+        reason: "ประมาณจาก benchmark ได้"
+
+  can_advance:
+    intake_to_grill:
+      - check: "at_least_2_required_fields"
+        fail_message: "ยังขาดข้อมูลจำเป็น — ตอบก่อน 2-3 ข้อแล้วค่อยไปต่อ"
+    grill_to_research:
+      - check: "assumptions_probed"
+        fail_message: "ยังไม่ได้ซักแผนธุรกิจให้ลึกพอ — ตอบคำถาม grill ก่อน"
+    research_to_modeling:
+      - check: "benchmark_ready"
+        fail_message: "ข้อมูลตลาดยังไม่พอ — ต้อง research ก่อน model"
+    modeling_to_risk:
+      - check: "scenarios_calculated"
+        fail_message: "ยังไม่มี financial model → ไป risk ไม่ได้"
+    risk_to_recommendation:
+      - check: "risks_mapped"
+        fail_message: "ต้องวิเคราะห์ risk ก่อน"
+
+  report_gate:
+    enabled: true
+    required_for_report:
+      - business_type
+      - target_customer
+      - capital
+      - estimated_revenue
+      - cost_structure
+    blocked_message: "ข้อมูลยังไม่ครบ — ตอบคำถามที่ขาดก่อน แล้วค่อยสร้าง report"
+
+# ─── Obsidian Integration ──────────────────────────────────────────────────────
+obsidian:
+  vault_env: OBSIDIAN_VAULT_PATH
+  default_vault: vegapunk
+  venture_subdir: Business/Ventures
+  template_subdir: Business/Templates
+  log_format:
+    questions: "### 👤 HERMES [{timestamp}]\n{text}\n"
+    answers: "### 👤 USER [{timestamp}]\n{text}\n"
+    assumptions: "**Assumption:** {text}"
+    risks: "**Risk:** {text}"
+    decisions: "**Decision:** {text} — {reason}"
+  frontmatter_template:
+    - venture
+    - phase
+    - date
+    - idea
+    - tags
+
+# ─── Memory Schema ─────────────────────────────────────────────────────────────
+memory:
+  active_workflow:
+    type: object
+    fields:
+      current_phase:
+        type: string
+        enum: [intake, grill, research, modeling, risk, recommendation]
+      business_idea:
+        type: string
+      known_facts:
+        type: array
+        items: string
+      assumptions:
+        type: array
+        items: string
+      unknowns:
+        type: array
+        items: string
+      risks:
+        type: array
+        items: string
+      decisions:
+        type: array
+        items: object
+      next_questions:
+        type: array
+        items: string
+      session_id:
+        type: string
+      started_at:
+        type: string
+
+  rules:
+    - "Never ask questions already in known_facts"
+    - "Continue from current_phase on resume"
+    - "Read Obsidian notes before asking new questions"
+    - "Log every Q&A turn to Obsidian immediately"
+
+# ─── Interaction Contract ───────────────────────────────────────────────────────
+interaction_contract:
+  ask_small_batches: true
+  wait_for_response: true
+  never_finalize_immediately: true
+  challenge_assumptions: true
+  phase_by_phase: true
+  no_phase_skip: true
+  consultant_behavior: true
+  tone: "กระชับ ตรงไปตรงมา ไม่เกรงใจ"
+  max_initial_questions: 6
+  follow_up_questions_max: 3
+  vague_response_handling: "ถามซ้ำจนได้ตัวเลขจริง"

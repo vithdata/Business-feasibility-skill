@@ -1,3 +1,120 @@
+# Hermes Business Framework — Command Definitions
+
 commands:
+  # ── Primary workflow ─────────────────────────────────────────────────────────
   bf:
     workflow: feasibility-study
+    description: "Full feasibility study — เจ๊งในกระดาษ workflow"
+    triggers:
+      - "/bf"
+      - "/เจ๊งในกระดาษ"
+      - "/feasibility"
+    args:
+      - name: idea
+        required: true
+        description: "Business idea to analyze"
+      - name: --deep
+        flag: true
+        description: "Extended research phase with competitor deep-dive"
+      - name: --quick
+        flag: true
+        description: "Fast intake only, skip extended research"
+      - name: --html
+        flag: true
+        description: "Generate HTML dashboard report"
+    examples:
+      - "/bf ร้านกาแฟใกล้มหาวิทยาลัย"
+      - "/bf ร้านอาหารคลีนใกล้โรงพยาบาล --deep"
+      - "/bf SaaS สำหรับคลินิกกายภาพ --html"
+      - "/bf แฟรนไชส์ร้านกาแฟ --quick"
+
+  # ── Resume / Snapshot ────────────────────────────────────────────────────────
+  resume:
+    description: "Resume previous workflow from Obsidian notes"
+    triggers:
+      - "/bf resume"
+      - "/feasibility resume"
+    args:
+      - name: venture
+        required: false
+        description: "Venture name (default: most recent)"
+
+  snapshot:
+    description: "Show current workflow state and progress"
+    triggers:
+      - "/bf snapshot"
+      - "/bf status"
+
+  setup:
+    description: "Setup Obsidian vault and workflow folders"
+    triggers:
+      - "/bf setup"
+      - "/business setup"
+
+  # ── Sub-workflows ────────────────────────────────────────────────────────────
+  grill:
+    workflow: grill-business-model
+    description: "Grill-only: interrogate business assumptions"
+    triggers:
+      - "/grill-business"
+      - "/grill"
+    args:
+      - name: idea
+        required: false
+
+  fdd:
+    workflow: failure-driven-development
+    description: "Failure-Driven Development — find how the business will fail"
+    triggers:
+      - "/fdd"
+      - "/failure"
+
+  diagnose:
+    workflow: diagnose-business
+    description: "Diagnose business problem systematically"
+    triggers:
+      - "/diagnose"
+      - "/diagnose-business"
+
+  pivot:
+    workflow: pivot-or-optimize
+    description: "Decide: Pivot or Optimize current business"
+    triggers:
+      - "/pivot"
+      - "/pivot-or-optimize"
+
+  audit:
+    workflow: weekly-business-audit
+    description: "Weekly business audit — quick health check"
+    triggers:
+      - "/audit"
+      - "/weekly-audit"
+
+  to-business-plan:
+    workflow: to-business-plan
+    description: "Convert feasibility data into actionable business plan"
+    triggers:
+      - "/to-business-plan"
+      - "/business-plan"
+
+  handoff:
+    workflow: handoff-report
+    description: "Generate handoff report for team/stakeholders"
+    triggers:
+      - "/handoff"
+      - "/handoff-report"
+
+# Global flags
+global_flags:
+  --verbose: "Show detailed reasoning"
+  --dry-run: "Show what would happen without doing it"
+  --save: "Force save to Obsidian"
+
+# Obsidian vault config
+obsidian:
+  vault_env: OBSIDIAN_VAULT_PATH
+  default_vault: vegapunk
+  ventures_dir: Business/Ventures
+  templates_dir: Business/Templates
+  research_dir: Business/Research
+  note_extension: .md

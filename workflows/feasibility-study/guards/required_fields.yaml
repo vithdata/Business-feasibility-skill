@@ -1,0 +1,42 @@
+# Guard: Required Fields Check
+# Validates that critical data exists before advancing phases
+
+intake_required:
+  critical:
+    - field: business_type
+      reason: "ไม่รู้ว่าธุรกิจอะไร → คำนวณไม่ได้"
+    - field: target_customer
+      reason: "ไม่รู้ใครคือลูกค้า → ไม่รู้จะขายให้ใคร"
+  important:
+    - field: capital
+      reason: "ประมาณได้ แต่ไม่แม่น"
+    - field: revenue_estimate
+      reason: "ประมาณจาก benchmark ได้"
+
+grill_required:
+  critical:
+    - field: capital
+      reason: "ไม่รู้งบลงทุน → ไม่รู้จะอยู่ได้นานแค่ไหน"
+    - field: cost_structure
+      reason: "ไม่รู้ต้นทุน → คำนวณ margin ไม่ได้"
+    - field: differentiation
+      reason: "ไม่รู้ moat → ไม่รู้จะแข่งได้ไหม"
+
+research_required:
+  important:
+    - field: competitor_list
+      reason: "ไม่รู้คู่แข่ง → ไม่รู้ตำแหน่งตลาด"
+    - field: market_size
+      reason: "ไม่รู้ TAM → ไม่รู้โอกาส"
+
+modeling_required:
+  critical:
+    - field: capital
+    - field: estimated_revenue
+    - field: cost_structure
+
+risk_required:
+  critical:
+    - field: failure_modes
+      reason: "ไม่รู้จะเจ๊งทางไหน → ไม่รู้จะป้องกันยังไง"
+    - field: risk_heatmap

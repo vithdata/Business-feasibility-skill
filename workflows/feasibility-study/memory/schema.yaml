@@ -1,0 +1,89 @@
+# Memory Schema — Workflow State Persistence
+# Active workflow state tracked across sessions
+
+active_workflow:
+  type: object
+  required: [session_id, current_phase, business_idea, started_at]
+  properties:
+    session_id:
+      type: string
+      description: "Unique session identifier for this workflow"
+      example: "bf_20250513_143022"
+    current_phase:
+      type: string
+      enum: [intake, grill, research, modeling, risk, recommendation]
+      description: "Current workflow phase"
+    business_idea:
+      type: string
+      description: "The business idea being analyzed"
+    venture_path:
+      type: string
+      description: "Obsidian path for this venture"
+      example: "~/obsidian-vault/vegapunk/Business/Ventures/coffee-hospital/"
+    started_at:
+      type: string
+      format: iso8601
+    updated_at:
+      type: string
+      format: iso8601
+    completed_phases:
+      type: array
+      items: string
+      description: "List of completed phase IDs"
+    known_facts:
+      type: array
+      items: string
+      description: "Facts provided by user with evidence"
+    assumptions:
+      type: array
+      items: object
+      properties:
+        field: string
+        value: string
+        source: string
+        risk: string
+    unknowns:
+      type: array
+      items: object
+      properties:
+        field: string
+        why_matters: string
+        validation_method: string
+    risks:
+      type: array
+      items: object
+      properties:
+        id: string
+        description: string
+        probability: string
+        impact: string
+        mitigation: string
+    decisions:
+      type: array
+      items: object
+      properties:
+        decision: string
+        reason: string
+        timestamp: string
+    next_questions:
+      type: array
+      items: string
+      description: "Next questions to ask based on current phase"
+
+# Resume rules
+resume_rules:
+  - rule: "Never ask questions already in known_facts"
+  - rule: "Always read Obsidian session notes before continuing"
+  - rule: "Continue from current_phase on resume"
+  - rule: "If phase incomplete → complete current phase before advancing"
+  - rule: "If session_id missing → start new workflow"
+
+# Venture tracking
+venture:
+  type: object
+  properties:
+    name: string
+    phase: string
+    last_activity: string
+    report_path: string
+    notes_count: integer
